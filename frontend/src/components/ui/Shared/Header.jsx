@@ -12,14 +12,33 @@ const Header = () => {
        </Link>
 
 
-       <form className='p-3 bg-slate-100 rounded-lg flex items-center'>
-        <input type="text" placeholder='Search...' 
-        className='focus:outline-none bg-transparent w-24 sm:w-24' />
+       <form
+  className="p-3 bg-slate-100 rounded-lg flex items-center gap-2"
+  role="search"
+>
 
-        <button>
-          <FaSearch className='text-stone-600' />
-        </button>
-       </form>
+  <label htmlFor="site-search" className="sr-only">
+    Search News
+  </label>
+
+  <input
+    type="search"
+    id="site-search"
+    name="search"
+    placeholder="Search news..."
+    autoComplete="off"
+    required
+    className="focus:outline-none bg-transparent w-24 sm:w-40 text-sm"
+  />
+
+  <button
+    type="submit"
+    className="text-red-600 hover:text-red-700"
+  >
+    🔍
+  </button>
+
+</form>
 
        <ul className='flex gap-4'>
           <Link to={"/"}>
