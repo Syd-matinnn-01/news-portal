@@ -1,11 +1,15 @@
 import React, { useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
-import toast from "react-hot-toast"
+import { toast } from "@/hooks/use-toast"
 
 const SignUpForm = () => {
 
   const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
+
+  const navigate = useNavigate()
 
   async function onSubmit(e) {
 
@@ -21,9 +25,35 @@ const SignUpForm = () => {
 
     console.log("Signup Data:", data)
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+    if (!emailRegex.test(data.email)) {
+      setErrorMessage("Invalid email address")
+
+      toast({
+        title: "Invalid email address",
+      })
+
+      return
+    }
+
+    if (data.password.length < 8) {
+
+      setErrorMessage("Password must be at least 8 characters")
+
+      toast({
+        title: "Password must be at least 8 characters",
+      })
+
+      return
+    }
+
     try {
 
-      const res = await fetch("http://localhost:5000/api/auth/signup", {
+      setLoading(true)
+      setErrorMessage("")
+
+      const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -35,34 +65,56 @@ const SignUpForm = () => {
 
       console.log(result)
 
+      // ❌ backend returned error
+      if (result.success === false) {
+
+        setLoading(false)
+
+        toast({
+          title: "Sign up failed! Please try again."
+        })
+
+        return setErrorMessage(result.message)
+
+      }
+
+      // ✅ success
       if (res.ok) {
-        toast.success("Account created successfully 🚀")
-      } else {
-        toast.error(result.message)
+
+        toast({
+          title: "Sign up successful 🎉"
+        })
+
+        navigate("/sign-in")
+
       }
 
     } catch (error) {
+
       console.log(error)
-      toast.error("Signup failed")
+
+      setLoading(false)
+
+      toast({
+        title: "Something went wrong"
+      })
+
+      setErrorMessage("Something went wrong")
+
     }
 
   }
 
-
   function handleGoogleLogin() {
 
-    // redirect to backend google auth
-    window.location.href = "http://localhost:5000/api/auth/google"
+    window.location.href = "/api/auth/google"
 
   }
-
 
   return (
     <div className="relative min-h-screen bg-black overflow-hidden flex items-center justify-center">
 
       <div className="absolute inset-0 bg-gradient-to-br from-black via-red-950 to-black"></div>
-
-      {/* Breaking News Ticker */}
 
       <div className="absolute top-0 w-full bg-red-700 text-white text-sm py-2 overflow-hidden z-20">
         <div className="ticker">
@@ -70,10 +122,7 @@ const SignUpForm = () => {
         </div>
       </div>
 
-
       <div className="relative z-10 flex w-full max-w-7xl mt-16">
-
-        {/* LEFT SIDE */}
 
         <div className="hidden md:flex w-1/2 relative items-center justify-center px-16 text-white">
 
@@ -101,9 +150,6 @@ const SignUpForm = () => {
           </div>
         </div>
 
-
-        {/* RIGHT SIGNUP */}
-
         <div className="w-full md:w-1/2 flex items-center justify-center px-6">
 
           <motion.div
@@ -125,10 +171,7 @@ const SignUpForm = () => {
 
             </div>
 
-
             <form onSubmit={onSubmit} className="space-y-5">
-
-              {/* Username */}
 
               <input
                 type="text"
@@ -140,8 +183,6 @@ const SignUpForm = () => {
                 className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-red-600 focus:outline-none"
               />
 
-              {/* Email */}
-
               <input
                 type="email"
                 id="email"
@@ -151,8 +192,6 @@ const SignUpForm = () => {
                 required
                 className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-red-600 focus:outline-none"
               />
-
-              {/* Password */}
 
               <div className="relative">
 
@@ -176,29 +215,31 @@ const SignUpForm = () => {
 
               </div>
 
-
-              {/* SIGNUP BUTTON */}
+              {errorMessage && (
+                <p className="text-red-600 text-sm">{errorMessage}</p>
+              )}
 
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
                 type="submit"
+                disabled={loading}
                 className="w-full bg-red-700 hover:bg-red-800 text-white font-semibold py-3 rounded-xl shadow-md transition"
               >
-                Sign Up
+
+                {loading ? (
+                  <span className="animate-pulse">Loading...</span>
+                ) : (
+                  "Sign Up"
+                )}
+
               </motion.button>
-
-
-              {/* Divider */}
 
               <div className="flex items-center gap-3 my-4">
                 <div className="flex-1 h-px bg-gray-300"></div>
                 <span className="text-sm text-gray-500">OR</span>
                 <div className="flex-1 h-px bg-gray-300"></div>
               </div>
-
-
-              {/* GOOGLE LOGIN */}
 
               <motion.button
                 whileHover={{ scale: 1.02 }}
@@ -220,7 +261,6 @@ const SignUpForm = () => {
 
             </form>
 
-
             <p className="mt-6 text-sm text-gray-600 text-center">
 
               Already have an account?
@@ -240,58 +280,35 @@ const SignUpForm = () => {
 
       </div>
 
-
-      {/* ANIMATIONS */}
-
-      <style>
-
-        {`
-
+      <style>{`
         .globe {
-
           width: 500px;
           height: 500px;
           border-radius: 50%;
-
           background:
           radial-gradient(circle at 30% 30%, rgba(255,255,255,0.08), transparent 70%),
           repeating-linear-gradient(0deg, rgba(255,255,255,0.04) 0 2px, transparent 2px 25px),
           repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0 2px, transparent 2px 25px);
-
           animation: rotate 60s linear infinite;
-
           opacity: 0.1;
-
         }
 
         @keyframes rotate {
-
           from { transform: rotate(0deg); }
-
           to { transform: rotate(360deg); }
-
         }
 
         .ticker {
-
           display: inline-block;
           white-space: nowrap;
-
           animation: tickerMove 25s linear infinite;
-
         }
 
         @keyframes tickerMove {
-
           0% { transform: translateX(100%); }
-
           100% { transform: translateX(-100%); }
-
         }
-
-        `}
-
-      </style>
+      `}</style>
 
     </div>
   )

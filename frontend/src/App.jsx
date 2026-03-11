@@ -7,6 +7,7 @@ import About from "./pages/About"
 import NewsArtical from "./pages/NewsArtical"
 import Dashbord from "./pages/Dashbord"
 import Header from "./components/ui/Shared/Header"
+import { Toaster } from "./components/ui/toaster"
 
 const App = () => {
   return (
@@ -20,7 +21,9 @@ const App = () => {
         <Route path="/about" element={<About />} />
         <Route path="/Dashboard" element={<Dashbord />} />
         <Route path="/news-artical" element={<NewsArtical />} />
-      </Routes>
+      </Routes>  
+
+      <Toaster />
     </BrowserRouter>
   )
 }
